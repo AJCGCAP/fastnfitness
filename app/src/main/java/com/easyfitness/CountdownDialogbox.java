@@ -44,28 +44,9 @@ public class CountdownDialogbox extends Dialog implements
         @Override
         public void onChronometerTick(Chronometer chronometer) {
             // Update progressbar
-            //progressBar = (ProgressBar) findViewById(R.id.progressBarCountdown);
-
             int secElapsed = (int) (chrono.getTimeElapsed() / 1000); //secElapsed is a negative value
-            //progressBar.setProgress(iRestTime + secElapsed);
             progressCircle.setProgress(iRestTime + secElapsed);
-/*
-            if (secElapsed >= -2) { // Vibrate
-                if (!bFirst) {
-                    activity.getApplicationContext();
-                    Vibrator v = (Vibrator) activity.getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-                    // Vibrate for 500 milliseconds
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-                    } else {
-                        //deprecated in API 26
-                        v.vibrate(500);
-                    }
-                } else {
-                    bFirst = false;
-                }
-            }
-*/
+
             if (secElapsed >= 0) {
                 chrono.stop();
                 dismiss();

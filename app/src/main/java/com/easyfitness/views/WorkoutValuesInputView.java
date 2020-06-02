@@ -21,7 +21,10 @@ import java.util.TimeZone;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatCheckBox;
+import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.cardview.widget.CardView;
 
 public class WorkoutValuesInputView extends LinearLayout {
 
@@ -41,6 +44,10 @@ public class WorkoutValuesInputView extends LinearLayout {
     private SingleValueInputView secondsInputView;
     private SingleValueInputView distanceInputView;
     private SingleValueInputView durationInputView;
+
+    private CardView restTimeCardView = null;
+    private AppCompatEditText restTimeEditText;
+    private AppCompatCheckBox restTimeCheckBox;
 
     public WorkoutValuesInputView(@NonNull Context context) {
         super(context);
@@ -72,6 +79,10 @@ public class WorkoutValuesInputView extends LinearLayout {
         secondsInputView = rootView.findViewById(R.id.SecondsInputView);
         distanceInputView = rootView.findViewById(R.id.DistanceInputView);
         durationInputView = rootView.findViewById(R.id.DurationInputView);
+
+        restTimeCardView = rootView.findViewById(R.id.restTimeCardView);
+        restTimeEditText = rootView.findViewById(R.id.restTimeEditText);
+        restTimeCheckBox  = rootView.findViewById(R.id.restTimeCheckBox);
 
         TypedArray a = context.getTheme().obtainStyledAttributes(
             attrs,
@@ -189,7 +200,7 @@ public class WorkoutValuesInputView extends LinearLayout {
     }
 
     public float getDistanceValue() {
-        return Float.parseFloat(distanceInputView.getValue().toString().replaceAll(",", "."));
+        return Float.parseFloat(distanceInputView.getValue().replaceAll(",", "."));
     }
 
     public DistanceUnit getDistanceUnit() {
@@ -274,5 +285,26 @@ public class WorkoutValuesInputView extends LinearLayout {
 
     public void setDurationUnit(DistanceUnit unit) {
         distanceInputView.setSelectedUnit(unit.toString());
+    }
+
+    public void setShowRestTime(boolean isShown) {
+        if (isShown) restTimeCardView.setVisibility(VISIBLE);
+        else restTimeCardView.setVisibility(GONE);
+    }
+
+    public boolean isRestTimeActivated() {
+        return restTimeCheckBox.isChecked();
+    }
+
+    public void activatedRestTime(boolean activated) {
+        restTimeCheckBox.setChecked(activated);
+    }
+
+    public void setRestTime(int unit) {
+        restTimeEditText.setText(String.valueOf(unit));
+    }
+
+    public int getRestTime() {
+        return Integer.parseInt(restTimeEditText.getText().toString());
     }
 }

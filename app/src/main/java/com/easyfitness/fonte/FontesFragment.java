@@ -70,11 +70,8 @@ import com.mikhaellopez.circularimageview.CircularImageView;
 import com.onurkaganaldemir.ktoastlib.KToast;
 
 import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.TimeZone;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -88,10 +85,6 @@ public class FontesFragment extends Fragment {
     ImageButton machineListButton = null;
     ImageButton detailsExpandArrow = null;
     LinearLayout detailsLayout = null;
-
-    LinearLayout restTimeLayout = null;
-    EditText restTimeEdit = null;
-    CheckBox restTimeCheck = null;
 
     CheckBox autoTimeCheckBox = null;
     TextView dateEdit = null;
@@ -270,14 +263,8 @@ public class FontesFragment extends Fragment {
             int iNbSeries = mDbBodyBuilding.getNbSeries(date, machineEdit.getText().toString());
 
             //--Launch Rest Dialog
-            boolean bLaunchRest = restTimeCheck.isChecked();
-            int restTime = 60;
-            try {
-                restTime = Integer.valueOf(restTimeEdit.getText().toString());
-            } catch (NumberFormatException e) {
-                restTime = 60;
-                restTimeEdit.setText("60");
-            }
+            boolean bLaunchRest = workoutValuesInputView.isRestTimeActivated();
+            int restTime = workoutValuesInputView.getRestTime();
 
             // Launch Countdown
             if (bLaunchRest && DateConverter.dateToLocalDateStr(date, getContext()).equals(DateConverter.dateToLocalDateStr(new Date(), getContext()))) { // Only launch Countdown if date is today.
@@ -319,14 +306,8 @@ public class FontesFragment extends Fragment {
             int iNbSeries = mDbStatic.getNbSeries(date, machineEdit.getText().toString());
 
             //--Launch Rest Dialog
-            boolean bLaunchRest = restTimeCheck.isChecked();
-            int restTime = 60;
-            try {
-                restTime = Integer.valueOf(restTimeEdit.getText().toString());
-            } catch (NumberFormatException e) {
-                restTime = 60;
-                restTimeEdit.setText("60");
-            }
+            boolean bLaunchRest = workoutValuesInputView.isRestTimeActivated();
+            int restTime = workoutValuesInputView.getRestTime();
 
             // Launch Countdown
             if (bLaunchRest && DateConverter.dateToLocalDateStr(date, getContext()).equals(DateConverter.dateToLocalDateStr(new Date(), getContext()))) { // Only launch Countdown if date is today.
@@ -370,6 +351,7 @@ public class FontesFragment extends Fragment {
         lTableColor = (lTableColor + 1) % 2; // Change la couleur a chaque ajout de donnees
 
         refreshData();
+        saveSharedParams();
 
         /* Reinitialisation des machines */
         // TODO Eviter de recreer a chaque fois l'adapter. On peut utiliser toujours le meme.
@@ -611,12 +593,7 @@ public class FontesFragment extends Fragment {
 
         detailsLayout = view.findViewById(R.id.notesLayout);
         detailsExpandArrow = view.findViewById(R.id.buttonExpandArrow);
-        restTimeEdit = view.findViewById(R.id.editRestTime);
-        restTimeCheck = view.findViewById(R.id.restTimecheckBox);
         machineImage = view.findViewById(R.id.imageMachine);
-
-
-        restTimeLayout = view.findViewById(R.id.restTimeLayout);
 
         autoTimeCheckBox = view.findViewById(R.id.autoTimeCheckBox);
         dateEdit = view.findViewById(R.id.editDate);
@@ -635,8 +612,6 @@ public class FontesFragment extends Fragment {
         machineEdit.setOnItemClickListener(onItemClickFilterList);
         recordList.setOnItemLongClickListener(itemlongclickDeleteRecord);
         detailsExpandArrow.setOnClickListener(collapseDetailsClick);
-        restTimeEdit.setOnFocusChangeListener(restTimeEditChange);
-        restTimeCheck.setOnCheckedChangeListener(restTimeCheckChange); //.setOnFocusChangeListener(restTimeEditChange);
 
         restoreSharedParams();
 
@@ -706,10 +681,6 @@ public class FontesFragment extends Fragment {
 
     public String getName() {
         return getArguments().getString("name");
-    }
-
-    public int getFragmentId() {
-        return getArguments().getInt("id", 0);
     }
 
     public MainActivity getMainActivity() {
@@ -810,8 +781,6 @@ public class FontesFragment extends Fragment {
     }
 
     public String getMachine() {
-        /*if (machineEdit == null)
-            machineEdit = this.getView().findViewById(R.id.editMachine);*/
         return machineEdit.getText().toString();
     }
 
@@ -843,8 +812,6 @@ public class FontesFragment extends Fragment {
             updateMinMax(null);
             return;
         }
-
-
 
         // Update EditView
         machineEdit.setText(lMachine.getName());
@@ -1047,32 +1014,29 @@ public class FontesFragment extends Fragment {
         switch (pType) {
             case DAOMachine.TYPE_CARDIO:
                 workoutValuesInputView.setSelectedType(ExerciseType.CARDIO);
-                restTimeLayout.setVisibility(View.GONE);
                 break;
             case DAOMachine.TYPE_STATIC:
                 workoutValuesInputView.setSelectedType(ExerciseType.ISOMETRIC);
-                restTimeLayout.setVisibility(View.VISIBLE);
                 break;
             case DAOMachine.TYPE_FONTE:
             default:
                 workoutValuesInputView.setSelectedType(ExerciseType.STRENGTH);
-                restTimeLayout.setVisibility(View.VISIBLE);
         }
     }
 
     public void saveSharedParams() {
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("restTime", restTimeEdit.getText().toString());
-        editor.putBoolean("restCheck", restTimeCheck.isChecked());
+        editor.putInt("restTime2", workoutValuesInputView.getRestTime());
+        editor.putBoolean("restCheck", workoutValuesInputView.isRestTimeActivated());
         editor.putBoolean("showDetails", this.detailsLayout.isShown());
         editor.apply();
     }
 
     public void restoreSharedParams() {
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        restTimeEdit.setText(sharedPref.getString("restTime", ""));
-        restTimeCheck.setChecked(sharedPref.getBoolean("restCheck", true));
+        workoutValuesInputView.setRestTime(sharedPref.getInt("restTime2", 60));
+        workoutValuesInputView.activatedRestTime(sharedPref.getBoolean("restCheck", true));
 
         if (sharedPref.getBoolean("showDetails", false)) {
             detailsLayout.setVisibility(View.VISIBLE);
